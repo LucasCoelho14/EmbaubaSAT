@@ -11,9 +11,9 @@ const int irqPin = 2;         //2 Pino DI0 14
 
 String outgoing;              // outgoing message
 
-byte localAddress = 0xBC;     // Endereco deste dispositivo LoRa
+byte localAddress = 0xFF;     // Endereco deste dispositivo LoRa
 byte msgCount = 0;            // Contador de mensagens enviadas
-byte destination = 0xBA;      // Endereco do dispositivo para enviar a mensagem (0xFF envia para todos devices)
+byte destination = 0xFF;      // Endereco do dispositivo para enviar a mensagem (0xFF envia para todos devices)
 long lastSendTime = 0;        // TimeStamp da ultima mensagem enviada
 int interval = 5000;          // Intervalo em ms no envio das mensagens (inicial 5s)
 
