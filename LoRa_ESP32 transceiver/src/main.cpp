@@ -51,15 +51,20 @@ void onReceive(int packetSize)
   if (incomingLength != incoming.length()) 
   {   
     // check length for error
-    Serial.println("erro!: o tamanho da mensagem nao condiz com o conteudo!");
-    return;                        
+    //Serial.print("Header length");
+    //Serial.print(incomingLength);
+    //Serial.print("   |   ");
+    //Serial.print("Measured length");
+    //Serial.println(incoming.length());     
+    //Serial.println("erro!: o tamanho da mensagem nao condiz com o conteudo!");
+    //return;                        
   }
  
   // if the recipient isn't this device or broadcast,
   if (recipient != localAddress && recipient != 0xFF)
   {
     Serial.println("This message is not for me.");
-    return;                             // skip rest of function
+    //return;                             // skip rest of function
   }
  
   // Caso a mensagem seja para este dispositivo, imprime os detalhes
@@ -77,7 +82,7 @@ void onReceive(int packetSize)
 void setup() 
 {
   // inicializacao da serial 
-  Serial.begin(9600);                   
+  Serial.begin(115200);                   
   while (!Serial);
  
   Serial.println(" Comunicacao LoRa Duplex - Ping&Pong ");
