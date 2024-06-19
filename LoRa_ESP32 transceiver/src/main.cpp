@@ -1,9 +1,11 @@
 #include <Arduino.h>
 // Comunicação LoRa com Arduino 
-// Definicao das bibliotecas a serem utilizadas no projeto
 #include <SPI.h>             
 #include <LoRa.h>
- 
+#include <ArduinoJson.h>
+
+StaticJsonDocument<512> deserializedDoc;
+
 // Definicacao de constantes
 const int csPin = 5;         //5 Chip Select (Slave Select do protocolo SPI) do modulo Lora 0
 const int resetPin = 14;       //14 Reset do modulo LoRa 10
@@ -33,48 +35,10 @@ void sendMessage(String outgoing)
 // Funcao para receber mensagem 
 void onReceive(int packetSize) 
 {
-  if (packetSize == 0) return;          // Se nenhuma mesnagem foi recebida, retorna nada
- 
-  // Leu um pacote, vamos decodificar? 
-  int recipient = LoRa.read();          // Endereco de quem ta recebendo
-  byte sender = LoRa.read();            // Endereco do remetente
-  byte incomingMsgId = LoRa.read();     // Mensagem
-  byte incomingLength = LoRa.read();    // Tamanho da mensagem
- 
-  String incoming = "";
- 
-  while (LoRa.available())
-  {
-    incoming += (char)LoRa.read();
-  }
- 
-  if (incomingLength != incoming.length()) 
-  {   
-    // check length for error
-    //Serial.print("Header length");
-    //Serial.print(incomingLength);
-    //Serial.print("   |   ");
-    //Serial.print("Measured length");
-    //Serial.println(incoming.length());     
-    //Serial.println("erro!: o tamanho da mensagem nao condiz com o conteudo!");
-    //return;                        
-  }
- 
-  // if the recipient isn't this device or broadcast,
-  if (recipient != localAddress && recipient != 0xFF)
-  {
-    Serial.println("This message is not for me.");
-    //return;                             // skip rest of function
-  }
- 
-  // Caso a mensagem seja para este dispositivo, imprime os detalhes
-  Serial.println("Recebido do dispositivo: 0x" + String(sender, HEX));
-  Serial.println("Enviado para: 0x" + String(recipient, HEX));
-  Serial.println("ID da mensagem: " + String(incomingMsgId));
-  Serial.println("Tamanho da mensagem: " + String(incomingLength));
-  Serial.println("Mensagem: " + incoming);
-  Serial.println("RSSI: " + String(LoRa.packetRssi()));
-  Serial.println("Snr: " + String(LoRa.packetSnr()));
+  if (packetSize == 0) return;       
+  DeserializationError err = deserializeJson(deserializedDoc, LoRa);
+  deserializedDoc["RSSI"] = LoRa.packetRssi();
+  serializeJson(deserializedDoc, Serial);
   Serial.println();
 }
 
@@ -97,22 +61,12 @@ void setup()
     while (true);                      
   }
  
-  Serial.println(" Modulo LoRa iniciado com sucesso!!! 🙂 ");
+  Serial.println("LoRa iniciado! ");
 }
  
 // Loop do microcontrolador - Operacoes de comunicacao LoRa
 void loop() 
 {
-  // verifica se temos o intervalo de tempo para enviar uma mensagem
-  if (millis() - lastSendTime > interval) 
-  {
-    String mensagem = "Hi Supernova! :O ";    // Definicao da mensagem 
-    sendMessage(mensagem);
-    Serial.println("Enviando " + mensagem);
-    lastSendTime = millis();            // Timestamp da ultima mensagem
-  }
- 
-  // parse for a packet, and call onReceive with the result:
   onReceive(LoRa.parsePacket());
 }
  
